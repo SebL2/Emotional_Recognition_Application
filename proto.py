@@ -1,9 +1,14 @@
-from torch import *
+import torch
 import os
 from deepface import DeepFace
+from PIL import Image
+import torchvision.transforms as transforms
 from network import *
 import cv2
-
+model = EmotionNetwork()
+model.load_state_dict(torch.load("./model/trained.pth"));
+video_capture = cv2.VideoCapture(0)
+file_path = os.path.join(os.getcwd()+"\\temp", "img.jpg")
 def detect_face(vid):
     gray_image = cv2.cvtColor(vid, cv2.COLOR_BGR2GRAY)
     faces = face_classifier.detectMultiScale(gray_image, 1.1, 5, minSize=(40, 40)) #array of coordinates where the face is
@@ -19,18 +24,26 @@ def detect_emotion_deepFace(face):
 
 def detect_emotion_NW(face,file_path):
     #code here for emotion detection
-    cv2.imwrite(file_path, face)
-    result = model(file_path)
+    emotion_chart = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
+    cv2.imwrite(file_path, face)    
+    image = Image.open(file_path).convert("L")
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,)),
+        transforms.Resize((48,48))
+    ])
+    tensor = transform(image)
+    tensor = torch.unsqueeze(tensor,0)
+    result = model(tensor)
+    print(result)
+    predicted_emotion =  emotion_chart[torch.argmax(result,1)]
     os.remove(file_path)
-    return result
+    return predicted_emotion
 
 face_classifier = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml" #can try different models and different benchmarks for this 
 )
-model = EmotionNetwork()
-model.load_state_dict(torch.load("trained.pth"));
-video_capture = cv2.VideoCapture(0)
-file_path = os.path.join(os.getcwd()+"\\temp", "img.jpg")
+
 while True:
     result, video_frame = video_capture.read()  
     if not result:
@@ -39,8 +52,8 @@ while True:
     for (x, y, w, h) in face:
         face_image = video_frame[y:y+h, x:x+w]
         
-        emotions = detect_emotion_NW(face_image,file_path)
-        # cv2.putText(video_frame, emotions[0]['dominant_emotion'], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        emotion = detect_emotion_NW(face_image,file_path)
+        cv2.putText(video_frame, emotion, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     cv2.imshow('',video_frame) #the application window
 
