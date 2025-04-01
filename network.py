@@ -1,5 +1,5 @@
 from torch import nn, optim,save,no_grad
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 import torchvision
 import torchvision.transforms as transforms
 
@@ -16,8 +16,8 @@ class EmotionNetwork(nn.Module):
             nn.Linear(512, 512),
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Linear(512, 7),
-            nn.Softmax()
+            nn.Linear(512, 7)
+            # nn.Softmax()
         )
 
     def forward(self, x):

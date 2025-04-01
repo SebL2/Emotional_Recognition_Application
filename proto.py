@@ -16,13 +16,12 @@ def detect_face(vid):
         cv2.rectangle(vid, (x, y), (x + w, y + h), (0, 255, 0), 4) 
     return faces
 def detect_emotion_deepFace(face):
-    #code here for emotion detection
     cv2.imwrite(file_path, face)    
     result = DeepFace.analyze(img_path = file_path, actions = ['emotion'],enforce_detection = False, silent = True, detector_backend="opencv")   
     os.remove(file_path)
     return result
 
-def detect_emotion_NW(face,file_path):
+def detect_emotion_NW(model,face,file_path):
     #code here for emotion detection
     emotion_chart = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
     cv2.imwrite(file_path, face)    
@@ -52,7 +51,9 @@ while True:
     for (x, y, w, h) in face:
         face_image = video_frame[y:y+h, x:x+w]
         
-        emotion = detect_emotion_NW(face_image,file_path)
+        emotion = detect_emotion_NW(model,face_image,file_path)
+        # emotion = detect_emotion_deepFace(face_image)
+        # cv2.putText(video_frame, emotion[0]['dominant_emotion'], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         cv2.putText(video_frame, emotion, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     cv2.imshow('',video_frame) #the application window
