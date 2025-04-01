@@ -3,7 +3,7 @@ import os
 from deepface import DeepFace
 from PIL import Image
 import torchvision.transforms as transforms
-from network import *
+from network import EmotionNetwork
 import cv2
 model = EmotionNetwork()
 model.load_state_dict(torch.load("./model/trained.pth"));
@@ -17,7 +17,7 @@ def detect_face(vid):
     return faces
 def detect_emotion_deepFace(face):
     #code here for emotion detection
-    cv2.imwrite(file_path, face)
+    cv2.imwrite(file_path, face)    
     result = DeepFace.analyze(img_path = file_path, actions = ['emotion'],enforce_detection = False, silent = True, detector_backend="opencv")   
     os.remove(file_path)
     return result
