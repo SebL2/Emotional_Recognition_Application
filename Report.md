@@ -1,11 +1,15 @@
-# skyrisTest
+# Report 
 
 Overall structure:
 The approach for facial recognition was to utilize libraries to have access to the systems webcam, and to capture images of the detected face and run it through a classification neural network.
 After having a general sense on what to build, I dove into researching what libraries to use and how to build a neural network. A simple sequential architecture is used for the network, taking in a 1x(48*48) size tensor as the input to the model. The model's output layer results in a tensor of size 1x7, with each entry corresponding to an emotion. The emotion is chosen on which entry has the highest activation value, and is then displayed right next to the detected face image on the camera.
 
-Through research, the project is developed using OpenCV, DeepFace and PyTorch. The FER2013 dataset obtained from Kaggle and is used to train the model. DeepFace was used just to get a feel on utilizing API calls on pretrained models and to jump start on the initialization of the project, thinking about on how should the neural network be structured. 
-
 Throughout the building process, there were times where I felt lost on how to proceed, especially when building the network and training the model. Most of the research time was spent on reading the PyTorch documentation to figure out the tools needed. 
 
-DeepFace's model preformed much more accurately than my own network. Perhaps further expansions could be to dig into a wider variety of emotions and not just the basic ones listed by the dataset. 
+Through research, the project is developed using OpenCV, DeepFace and PyTorch. The FER2013 dataset obtained from Kaggle and is used to train the model. DeepFace was used just to get a feel on utilizing API calls on pretrained models and to jump start on the initialization of the project, thinking about on how should the neural network be structured. 
+
+On the first attempt in training, the loss is considerably large, ranging to around 1.8-2, as it was only trained under 1 epoch with limited data. As such, different number of epochs are tested on this model. The model was then trained for a total of 50 epochs, the observed loss gradually decreased as the model keeps getting trained, with a validation loss serving as a benchmark on how well the model behaves. Around epochs 12-13, the validation loss stagnated at a value of around 1.5, while the training loss steadily decreases as more epochs go by, indicating overfitting. 
+
+"Neutral" is essentially the default emotion that it detects, and the model is able to predict happiness relatively accurately as opposed to the other emotions, a sad face fluctuates between "sad" and "neutral" rapidly, same with "surprise" but other emotions are less likely to be displayed correctly. 
+
+Seeing as the results are not optimal, I dove back into researching more about what models are more suitable for classifiers, which I turned my attention to convolutional networks. Understanding how the dimensionality works out is what I've spent the most time on, and overall just trying to understand what exactly it is doing to each image. The time it takes to train one epoch has increased dramatically, but the loss between epochs and batches converges much faster. The validation loss stagnates at around the fourth epoch, with the training loss being within close proximity of it, and as the training time has increased, the final model is trained on 5 epochs. The model seems to be more accurate than the simple network, being able to concretely display "happy" without any fluctuation of any other emotion. The other emotions are still a bit unstable, it is less than that of the previous simple network.

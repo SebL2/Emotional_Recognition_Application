@@ -8,7 +8,18 @@ class EmotionNetwork(nn.Module):
         super().__init__()
         self.flatten = nn.Flatten()
         self.network= nn.Sequential(
-            nn.Linear(48*48, 512),
+            nn.Conv2d(1, 32, 3),  
+            nn.ReLU(),
+            nn.MaxPool2d(2), 
+            
+            
+            nn.Conv2d(32, 64, 3),  
+            nn.ReLU(),
+            nn.MaxPool2d(2),  
+            
+            nn.Flatten(),   
+            
+            nn.Linear(6400, 512),
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(512, 512),
@@ -17,18 +28,14 @@ class EmotionNetwork(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(512, 7)
-            # nn.Softmax()
         )
 
     def forward(self, x):
-        x = self.flatten(x)
-        output = self.network(x)
-        output = self.flatten(output)
-        return output
+        return self.network(x)
 def train(model,optimizer,loss_fn,training_data):
     model.train(True)
     currloss = 0
-    last_loss = 0
+    batchLoss = 0
     for j, data in enumerate(training_data):
         inputs, expected = data #labels are a tensor of expected outputs of *batch_size* inputs
         optimizer.zero_grad()
@@ -37,11 +44,11 @@ def train(model,optimizer,loss_fn,training_data):
         loss.backward()
         optimizer.step()
         currloss += loss.item()
-        if j % 1000 == 999:
-            last_loss = running_loss / 1000  
-            print('  batch {} loss: {}'.format(j + 1, last_loss))
-            running_loss = 0
-    return last_loss
+        if j % 1000 == 999: 
+            batchLoss = currloss/1000;
+            print('  batch {} loss: {}'.format(j + 1, batchLoss))
+            currloss  = 0;
+    return batchLoss
 
 def evaluate(model,validation_loader):
     currLoss = 0
@@ -67,20 +74,20 @@ validation_loader = DataLoader(validation_set, batch_size=4, shuffle=False)
 
 model = EmotionNetwork() 
 loss_fn = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 # optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 if(__name__ == "__main__"):
     best = float("inf")
-    epochs = 10
+    epochs = 5
     for i in range(epochs):
         avg_loss = train(model,optimizer,loss_fn,training_loader)
         print("Epoch " + str(i) + " finished")
         avg_vloss = evaluate(model,validation_loader)
         print('LOSS train {} valid {}'.format(avg_loss, avg_vloss))
-        if avg_loss < best:
-            
-            best = avg_loss
+        if avg_vloss < best:
+            best = avg_vloss
             save(model.state_dict(),"model/trained.pth")
     print("Training finished")
 
+ 

@@ -4,6 +4,7 @@ from deepface import DeepFace
 from PIL import Image
 import torchvision.transforms as transforms
 from network import EmotionNetwork
+import torch.nn.functional as t
 import cv2
 model = EmotionNetwork()
 model.load_state_dict(torch.load("./model/trained.pth"));
@@ -34,7 +35,7 @@ def detect_emotion_NW(model,face,file_path):
     tensor = transform(image)
     tensor = torch.unsqueeze(tensor,0)
     result = model(tensor)
-    print(result)
+    result = t.softmax(result,1)
     predicted_emotion =  emotion_chart[torch.argmax(result,1)]
     os.remove(file_path)
     return predicted_emotion
